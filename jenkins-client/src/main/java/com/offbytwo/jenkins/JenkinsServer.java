@@ -38,6 +38,7 @@ import com.offbytwo.jenkins.model.JobWithDetails;
 import com.offbytwo.jenkins.model.LabelWithDetails;
 import com.offbytwo.jenkins.model.MainView;
 import com.offbytwo.jenkins.model.MavenJobWithDetails;
+import com.offbytwo.jenkins.model.PipelineJobWithDetails;
 import com.offbytwo.jenkins.model.PluginManager;
 import com.offbytwo.jenkins.model.Queue;
 import com.offbytwo.jenkins.model.QueueItem;
@@ -284,6 +285,25 @@ public class JenkinsServer implements Closeable {
             LOGGER.debug("getJob(folder={}, jobName={}) status={}", folder, jobName, e.getStatusCode());
             if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
                 // TODO: Think hard about this.
+                return null;
+            }
+            throw e;
+        }
+    }
+   
+    public PipelineJobWithDetails getPipelineJob(String jobname) throws IOException {
+        return getPipelineJob(null, UrlUtils.toFullJobPath(jobname));
+    }
+    
+    public PipelineJobWithDetails getPipelineJob(FolderJob folder, String jobName) throws IOException {
+        try {
+        	PipelineJobWithDetails job = client.get(UrlUtils.toJobBaseUrl(folder, jobName), PipelineJobWithDetails.class);
+            job.setClient(client);
+
+            return job;
+        } catch (HttpResponseException e) {
+            LOGGER.debug("getMavenJob(jobName={}) status={}", jobName, e.getStatusCode());
+            if (e.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
                 return null;
             }
             throw e;

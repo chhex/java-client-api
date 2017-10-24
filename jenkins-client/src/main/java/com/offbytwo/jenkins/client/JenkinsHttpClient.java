@@ -6,6 +6,7 @@
 
 package com.offbytwo.jenkins.client;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
@@ -158,6 +159,33 @@ public class JenkinsHttpClient implements Closeable {
             releaseConnection(getMethod);
         }
     }
+    
+	/**
+	 * Perform a GET request and parse the response to the given class
+	 *
+	 * @param path
+	 *            path to request, can be relative or absolute
+	 * @param cls
+	 *            class of the response
+	 * @param <T>
+	 *            type of the response
+	 * @return an instance of the supplied class
+	 * @throws IOException
+	 *             in case of an error.
+	 */
+	public <T extends BaseModel> List<T> get(String path, TypeReference<List<T>> list) throws IOException {
+		HttpGet getMethod = new HttpGet(UrlUtils.toJsonApiUri(uri, context, path));
+
+		HttpResponse response = client.execute(getMethod, localContext);
+		jenkinsVersion = ResponseUtils.getJenkinsVersion(response);
+		try {
+			httpResponseValidator.validateResponse(response);
+			return objectFromResponse(list, response);
+		} finally {
+			EntityUtils.consume(response.getEntity());
+			releaseConnection(getMethod);
+		}
+	}
 
     /**
      * Perform a GET request and parse the response and return a simple string
@@ -182,7 +210,7 @@ public class JenkinsHttpClient implements Closeable {
         }
 
     }
-
+  
     /**
      * Perform a GET request and parse the response to the given class, logging
      * any IOException that is thrown rather than propagating it.
@@ -461,7 +489,14 @@ public class JenkinsHttpClient implements Closeable {
 
     
 
-    
+	private <T extends BaseModel> List<T> objectFromResponse(TypeReference<List<T>> typeRef, HttpResponse response)
+			throws IOException {
+		InputStream content = response.getEntity().getContent();
+		byte[] bytes = ByteStreams.toByteArray(content);
+		List<T> result = mapper.readValue(bytes, typeRef);
+		result.stream().forEach(it -> it.setClient(this));
+		return result;
+	}
 
     
 
