@@ -3,6 +3,7 @@ package com.offbytwo.jenkins;
 import java.io.IOException;
 import java.util.Map;
 
+import com.google.common.collect.Lists;
 import com.offbytwo.jenkins.model.Build;
 import com.offbytwo.jenkins.model.BuildResult;
 import com.offbytwo.jenkins.model.BuildWithDetails;
@@ -168,19 +169,16 @@ public class JenkinsTriggerHelper {
 	}
 
 	/**
-	 * This method will trigger a build of the given job and will wait until the
-	 * builds is ended or if the build has been cancelled.
+	 * This method will trigger a build of the given Pipeline Job and will wait
+	 * until the Job is building until if the build has been cancelled.
 	 * 
 	 * @param jobName
-	 *            The name of the job which should be triggered.
+	 *            The name of the Pipeline Job which should be triggered.
 	 * @param params
 	 *            the job parameters
 	 * @param crumbFlag
 	 *            set to <code>true</code> or <code>false</code>.
-	 * @return In case of an cancelled job you will get
-	 *         {@link BuildWithDetails#getResult()}
-	 *         {@link BuildResult#CANCELLED}. So you have to check first if the
-	 *         build result is {@code CANCELLED}.
+	 * @return a {@link PipelineBuild} which is either Building or Canceled
 	 * @throws IOException
 	 *             in case of errors.
 	 * @throws InterruptedException
@@ -195,13 +193,10 @@ public class JenkinsTriggerHelper {
 
 	/**
 	 * @param jobName
-	 *            The name of the job.
+	 *            The name of the Pipeline Job.
 	 * @param queueRef
 	 *            {@link QueueReference}
-	 * @return In case of an cancelled job you will get
-	 *         {@link BuildWithDetails#getResult()}
-	 *         {@link BuildResult#CANCELLED}. So you have to check first if the
-	 *         build result is {@code CANCELLED}.
+	 * @return a {@link PipelineBuild} which is either Building or Canceled
 	 * @throws IOException
 	 *             in case of errors.
 	 * @throws InterruptedException
@@ -209,25 +204,29 @@ public class JenkinsTriggerHelper {
 	 */
 	private PipelineBuild triggerPipelineJobAndWaitUntilBuilding(String jobName, QueueReference queueRef)
 			throws IOException, InterruptedException {
-		PipelineJobWithDetails job = this.server.getPipelineJob(jobName);
-		QueueItem queueItem = this.server.getQueueItem(queueRef);
+		PipelineJobWithDetails job = server.getPipelineJob(jobName);
+		QueueItem queueItem = server.getQueueItem(queueRef);
 		while (!queueItem.isCancelled() && (job.isInQueue() || queueItem.getExecutable() == null)) {
 			Thread.sleep(retryInterval);
-			job = this.server.getPipelineJob(jobName);
-			queueItem = this.server.getQueueItem(queueRef);
+			job = server.getPipelineJob(jobName);
+			queueItem = server.getQueueItem(queueRef);
 		}
 		Build build = server.getBuild(queueItem);
-		if (queueItem.isCancelled()) {
-			job = this.server.getPipelineJob(jobName);
-			return job.getLastBuild();
+		while (true) {
+			BuildWithDetails buildWithDetails = build.details();
+			if (	buildWithDetails.isBuilding()) {
+				job = this.server.getPipelineJob(jobName);
+				return job.getLastBuild();
+			}
+			BuildResult buildResult = buildWithDetails.getResult();
+			if (buildResult != null && (buildResult.equals(BuildResult.ABORTED) 
+					|| buildResult.equals(BuildResult.SUCCESS) || buildResult.equals(BuildResult.CANCELLED)
+					|| buildResult.equals(BuildResult.UNSTABLE))) {
+				job = this.server.getPipelineJob(jobName);
+				return job.getLastBuild();
+			}
+			Thread.sleep(retryInterval);
 		}
 
-		boolean isBuilding = build.details().isBuilding();
-		while (!isBuilding) {
-			Thread.sleep(retryInterval);
-			isBuilding = build.details().isBuilding();
-		}
-		job = this.server.getPipelineJob(jobName);
-		return job.getLastBuild(); 
 	}
 }
