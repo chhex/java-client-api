@@ -90,6 +90,10 @@ public class WorkflowRun extends BaseModel {
 	public boolean isPausedPendingInput() {
 		return getStatus().equals("PAUSED_PENDING_INPUT"); 
 	}
+	
+	public boolean isInProgress() {
+		return getStatus().equals("IN_PROGRESS"); 
+	}
 
 	@Override
 	public int hashCode() {
