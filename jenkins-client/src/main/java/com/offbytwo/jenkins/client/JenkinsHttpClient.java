@@ -210,7 +210,7 @@ public class JenkinsHttpClient implements Closeable {
         }
 
     }
-  
+
     /**
      * Perform a GET request and parse the response to the given class, logging
      * any IOException that is thrown rather than propagating it.
