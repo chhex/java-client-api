@@ -10,7 +10,7 @@ import java.util.List;
 
 /**
  * This class is only needed to get all builds in
- * {@link MavenJobWithDetails#getAllBuilds()}.
+ * {@link PipelineJobWithDetails#getAllBuilds()}.
  * 
  * @author Karl Heinz Marbaise
  *

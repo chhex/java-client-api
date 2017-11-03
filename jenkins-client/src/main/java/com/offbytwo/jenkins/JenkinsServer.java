@@ -291,10 +291,24 @@ public class JenkinsServer implements Closeable {
         }
     }
    
+    /**
+     * Get a single Pipeline Job by name
+     * @param jobname the name of the job to get details of.
+     * @return a Pipeline Job with Details , null if not found
+     * @throws IOException
+     */
     public PipelineJobWithDetails getPipelineJob(String jobname) throws IOException {
         return getPipelineJob(null, UrlUtils.toFullJobPath(jobname));
     }
     
+    /**
+     * Get a single Pipeline from the given folder.
+     * 
+     * @param folder {@link FolderJob}
+     * @param jobName name of the job to get details of.
+     * @return A single Job, null if not present
+     * @throws IOException in case of an error.
+     */
     public PipelineJobWithDetails getPipelineJob(FolderJob folder, String jobName) throws IOException {
         try {
         	PipelineJobWithDetails job = client.get(UrlUtils.toJobBaseUrl(folder, jobName), PipelineJobWithDetails.class);
