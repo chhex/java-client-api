@@ -494,7 +494,9 @@ public class JenkinsHttpClient implements Closeable {
 		InputStream content = response.getEntity().getContent();
 		byte[] bytes = ByteStreams.toByteArray(content);
 		List<T> result = mapper.readValue(bytes, typeRef);
-		result.stream().forEach(it -> it.setClient(this));
+		for (T t : result) {
+			t.setClient(this);
+		}
 		return result;
 	}
 
