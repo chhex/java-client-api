@@ -161,15 +161,15 @@ public class JenkinsHttpClient implements Closeable {
     }
     
 	/**
-	 * Perform a GET request and parse the response to the given class
+	 * Perform a GET request and parse the response of a List of a given class
 	 *
 	 * @param path
 	 *            path to request, can be relative or absolute
-	 * @param cls
-	 *            class of the response
+	 * @param list
+	 *            TypeReference for a List of a Class
 	 * @param <T>
 	 *            type of the response
-	 * @return an instance of the supplied class
+	 * @return an List of instances of the supplied class
 	 * @throws IOException
 	 *             in case of an error.
 	 */
@@ -210,7 +210,7 @@ public class JenkinsHttpClient implements Closeable {
         }
 
     }
-  
+
     /**
      * Perform a GET request and parse the response to the given class, logging
      * any IOException that is thrown rather than propagating it.
@@ -494,7 +494,9 @@ public class JenkinsHttpClient implements Closeable {
 		InputStream content = response.getEntity().getContent();
 		byte[] bytes = ByteStreams.toByteArray(content);
 		List<T> result = mapper.readValue(bytes, typeRef);
-		result.stream().forEach(it -> it.setClient(this));
+		for (T t : result) {
+			t.setClient(this);
+		}
 		return result;
 	}
 

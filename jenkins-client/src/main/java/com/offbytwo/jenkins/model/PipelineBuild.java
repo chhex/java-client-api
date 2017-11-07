@@ -30,7 +30,11 @@ public class PipelineBuild extends Build {
 		String url = getUrl();
 		WorkflowRun workflowRun = client.get(url + "wfapi/describe", WorkflowRun.class);
 		workflowRun.setClient(client);
-		workflowRun.getStages().stream().forEach(st -> { st.setJobUrl(url); st.setClient(client);});
+		List<Stage> result = workflowRun.getStages();
+		for (Stage stage : result) {
+			stage.setJobUrl(url);
+			stage.setClient(client);
+		}
 		return workflowRun;
 
 	}
@@ -38,7 +42,9 @@ public class PipelineBuild extends Build {
 	public List<PendingInputActions> getPendingInputActions() throws IOException {
 		String url = getUrl();
 		List<PendingInputActions> resultList = client.get(url + "wfapi/pendingInputActions", new TypeReference<List<PendingInputActions>>(){});
-		resultList.stream().forEach(pa -> { pa.setClient(client); });
+		for (PendingInputActions pa : resultList) {
+			pa.setClient(client);
+		}
 		return resultList;
 	}
 
