@@ -1,6 +1,21 @@
 # Release Notes
 
-## Release 0.3.8 (NOT RELEASED YET)
+## Release 0.3.9 (NOT RELEASED YET)
+
+ * ...
+
+## Release 0.3.8
+
+ * [Fixed Issue 289][issue-289]
+   
+   Added a build.stop() method which takes in a crumbFlag
+
+
+ * [Fixed Issue 301][issue-301]
+   
+   Decoupled JenkinsServer and JenkinsHttpClient by extracting JenkinsHttpClient 
+   methods into public interface so that different implementations can be plugged
+   into JenkinsServer if required
 
 
  * [Fixed Issue 298][issue-298]
@@ -9,7 +24,7 @@
    underlying resources can be cleaned up when instances no longer required
 
 
- * [JENKINS-46472](https://issues.jenkins-ci.org/browse/JENKINS-46472)
+ * [JENKINS-46472][jissue-46472]
 
    Added ability to modify offline cause for offline computers.
 
@@ -21,7 +36,7 @@
     }
    ```
 
- * [JENKINS-46445](https://issues.jenkins-ci.org/browse/JENKINS-46445)
+ * [JENKINS-46445][jissue-46445]
 
    Add support for both client TLS and basic authentication.
 
@@ -101,8 +116,12 @@
 
 ### API Changes
 
- * ?
-
+ * [Fixed Issue 243](https://github.com/jenkinsci/java-client-api/issues/243) 
+ 
+    Added new methods to JenkinsServer for stopping and restarting Jenkins. The methods are restart(Boolean crumbFlag), safeRestart(Boolean crumbFlag), exit(Boolean crumbFlag) and safeExit(Boolean crumbFlag)
+	
+	Thanks for that to [Chids](https://github.com/Chids-gs).
+	
 ## Release 0.3.7
 
  * Changed Eclipse Formatting configuration.
@@ -1050,6 +1069,9 @@ TestReport testReport = mavenJob.getLastSuccessfulBuild().getTestReport();
 [issue-222]: https://github.com/jenkinsci/java-client-api/issues/222
 [issue-244]: https://github.com/jenkinsci/java-client-api/issues/244
 [issue-268]: https://github.com/jenkinsci/java-client-api/issues/268
+[issue-289]: https://github.com/jenkinsci/java-client-api/issues/289
+[issue-298]: https://github.com/jenkinsci/java-client-api/issues/298
+[issue-301]: https://github.com/jenkinsci/java-client-api/issues/301
 [pull-123]: https://github.com/jenkinsci/java-client-api/pull/123
 [pull-149]: https://github.com/jenkinsci/java-client-api/pull/149
 [pull-158]: https://github.com/jenkinsci/java-client-api/pull/158
@@ -1066,3 +1088,5 @@ TestReport testReport = mavenJob.getLastSuccessfulBuild().getTestReport();
 [jissue-38787]: https://issues.jenkins-ci.org/browse/JENKINS-38787
 [jissue-38816]: https://issues.jenkins-ci.org/browse/JENKINS-38816
 [jissue-38823]: https://issues.jenkins-ci.org/browse/JENKINS-38823
+[jissue-46445]: https://issues.jenkins-ci.org/browse/JENKINS-46445)
+[jissue-46472]: https://issues.jenkins-ci.org/browse/JENKINS-46472)

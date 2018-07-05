@@ -25,6 +25,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.offbytwo.jenkins.client.JenkinsHttpClient;
+import com.offbytwo.jenkins.client.JenkinsHttpConnection;
 import com.offbytwo.jenkins.client.util.EncodingUtils;
 import com.offbytwo.jenkins.client.util.UrlUtils;
 import com.offbytwo.jenkins.helper.JenkinsVersion;
@@ -52,7 +53,10 @@ import java.io.Closeable;
 public class JenkinsServer implements Closeable {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
-    private final JenkinsHttpClient client;
+    /**
+     * The transport client instance to use.
+     */
+    private final JenkinsHttpConnection client;
 
     /**
      * Create a new Jenkins server reference given only the server address
@@ -81,7 +85,7 @@ public class JenkinsServer implements Closeable {
      *
      * @param client Specialized client to use.
      */
-    public JenkinsServer(JenkinsHttpClient client) {
+    public JenkinsServer(final JenkinsHttpConnection client) {
         this.client = client;
     }
 
@@ -730,7 +734,7 @@ public class JenkinsServer implements Closeable {
      * @throws IOException in case of an error.
      */
     public void deleteJob(String jobName) throws IOException {
-        client.post("/job/" + EncodingUtils.encode(jobName) + "/doDelete");
+        deleteJob(jobName, false);
     }
 
     /**
@@ -752,7 +756,7 @@ public class JenkinsServer implements Closeable {
      * @throws IOException in case of an error.
      */
     public void disableJob(String jobName) throws IOException {
-        client.post("/job/" + EncodingUtils.encode(jobName) + "/disable");
+        disableJob(jobName, false);
     }
 
     /**
@@ -774,7 +778,7 @@ public class JenkinsServer implements Closeable {
      * @throws IOException In case of an failure.
      */
     public void enableJob(String jobName) throws IOException {
-        client.post("/job/" + EncodingUtils.encode(jobName) + "/enable");
+        enableJob( jobName, false );
     }
 
     /**
@@ -931,4 +935,74 @@ public class JenkinsServer implements Closeable {
     }
 
 
+	/**
+	 * Restart Jenkins without waiting for any existing build to complete
+	 * 
+	 * @param crumbFlag
+	 *            <code>true</code> to add <b>crumbIssuer</b> <code>false</code>
+	 *            otherwise.
+	 * @throws IOException
+	 *             in case of an error.
+	 */
+	public void restart(Boolean crumbFlag) throws IOException {
+		try {
+			client.post("/restart", crumbFlag);
+		} catch (org.apache.http.client.ClientProtocolException e) {
+			LOGGER.error("restart()", e);
+		}
+	}
+
+	/**
+	 * safeRestart: Puts Jenkins into the quiet mode, wait for existing builds
+	 * to be completed, and then restart Jenkins
+	 * 
+	 * @param crumbFlag
+	 *            <code>true</code> to add <b>crumbIssuer</b> <code>false</code>
+	 *            otherwise.
+	 * @throws IOException
+	 *             in case of an error.
+	 */
+	public void safeRestart(Boolean crumbFlag) throws IOException {
+		try {
+			client.post("/safeRestart", crumbFlag);
+		} catch (org.apache.http.client.ClientProtocolException e) {
+			LOGGER.error("safeRestart()", e);
+		}
+	}
+
+	/**
+	 * Shutdown Jenkins without waiting for any existing build to complete
+	 * 
+	 * @param crumbFlag
+	 *            <code>true</code> to add <b>crumbIssuer</b> <code>false</code>
+	 *            otherwise.
+	 * @throws IOException
+	 *             in case of an error.
+	 */
+	//
+	public void exit(Boolean crumbFlag) throws IOException {
+		try {
+			client.post("/exit", crumbFlag);
+		} catch (org.apache.http.client.ClientProtocolException e) {
+			LOGGER.error("exit()", e);
+		}
+	}
+
+	/**
+	 * safeExit: Puts Jenkins into the quiet mode, wait for existing builds to
+	 * be completed, and then shut down Jenkins
+	 * 
+	 * @param crumbFlag
+	 *            <code>true</code> to add <b>crumbIssuer</b> <code>false</code>
+	 *            otherwise.
+	 * @throws IOException
+	 *             in case of an error.
+	 */
+	public void safeExit(Boolean crumbFlag) throws IOException {
+		try {
+			client.post("/safeExit", crumbFlag);
+		} catch (org.apache.http.client.ClientProtocolException e) {
+			LOGGER.error("safeExit()", e);
+		}
+	}
 }
